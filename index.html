@@ -35,7 +35,6 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      /* Background menyatu (smooth radial blend) dengan pink lebih menonjol & pekat */
       background: radial-gradient(circle at center, #ff8fa3 0%, #ff4d6d 55%, #c71f54 100%);
       font-family: 'Plus Jakarta Sans', sans-serif;
       color: var(--text-dark);
@@ -66,9 +65,34 @@
       100% { bottom: 110vh; opacity: 0; transform: translateX(20px) rotate(180deg); }
     }
 
+    /* Music Floating Badge Control */
+    .music-badge {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      border-radius: 30px;
+      padding: 8px 14px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--primary-pink);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      z-index: 10;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      transition: all 0.3s ease;
+    }
+
+    .music-badge:hover {
+      transform: scale(1.05);
+    }
+
     /* Main Card */
     .card {
-      /* Card dengan efek semitransparan agar warna pink latar belakang menyatu & lembut */
       background: rgba(255, 255, 255, 0.93);
       backdrop-filter: blur(12px);
       border-radius: 32px;
@@ -338,6 +362,16 @@
 </head>
 <body>
 
+  <!-- Element Audio: Bazzi - Beautiful -->
+  <audio id="bgMusic" loop>
+    <source src="https://files.catbox.moe/54s6t9.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- Tombol Play/Pause Musik Melayang -->
+  <div class="music-badge" id="musicBtn" onclick="toggleMusic()">
+    <span id="musicIcon">🎵</span> <span id="musicText">Beautiful - Bazzi</span>
+  </div>
+
   <!-- Floating Hearts Background -->
   <div class="floating-hearts" id="heartsContainer"></div>
 
@@ -427,6 +461,33 @@
   </div>
 
   <script>
+    // Audio Player Logic
+    const audio = document.getElementById('bgMusic');
+    const musicText = document.getElementById('musicText');
+    const musicIcon = document.getElementById('musicIcon');
+    let isPlaying = false;
+
+    function playMusic() {
+      audio.play().then(() => {
+        isPlaying = true;
+        musicText.innerText = "Beautiful 🎶";
+        musicIcon.innerText = "🔊";
+      }).catch(err => {
+        console.log("Autoplay blocked by browser:", err);
+      });
+    }
+
+    function toggleMusic() {
+      if (isPlaying) {
+        audio.pause();
+        isPlaying = false;
+        musicText.innerText = "Play Music";
+        musicIcon.innerText = "🎵";
+      } else {
+        playMusic();
+      }
+    }
+
     // Data Pujian Manis & Hangat
     const compliments = [
       {
@@ -480,6 +541,7 @@
 
     // Modal Logic
     function showCompliment(index) {
+      playMusic();
       const data = compliments[index];
       document.getElementById('modalIcon').innerText = data.icon;
       document.getElementById('modalTitle').innerText = data.title;
@@ -488,6 +550,8 @@
     }
 
     function openSurprise() {
+      playMusic();
+
       // Trigger Confetti Multi-Burst
       var count = 200;
       var defaults = { origin: { y: 0.7 } };
