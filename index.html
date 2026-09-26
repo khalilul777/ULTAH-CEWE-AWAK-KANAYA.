@@ -65,7 +65,7 @@
       100% { bottom: 110vh; opacity: 0; transform: translateX(20px) rotate(180deg); }
     }
 
-    /* Music Floating Control */
+    /* Music Floating Badge Control */
     .music-badge {
       position: fixed;
       top: 15px;
@@ -89,10 +89,6 @@
 
     .music-badge:hover {
       transform: scale(1.05);
-    }
-
-    #fileAudioInput {
-      display: none;
     }
 
     /* Main Card */
@@ -366,15 +362,9 @@
 </head>
 <body>
 
-  <!-- Element Audio HTML5 Utama -->
-  <audio id="mainAudio" loop></audio>
-
-  <!-- Input tersembunyi untuk memuat file audio lokal jika diinginkan -->
-  <input type="file" id="fileAudioInput" accept="audio/*">
-
   <!-- Tombol Musik Melayang -->
   <div class="music-badge" id="musicBtn" onclick="toggleMusic()">
-    <span id="musicIcon">🎵</span> <span id="musicText">Putar Musik 🎶</span>
+    <span id="musicIcon">🎵</span> <span id="musicText">Putar Melodi 🎶</span>
   </div>
 
   <!-- Floating Hearts Background -->
@@ -466,46 +456,97 @@
   </div>
 
   <script>
-    const audio = document.getElementById('mainAudio');
-    const musicText = document.getElementById('musicText');
-    const musicIcon = document.getElementById('musicIcon');
+    // --- Web Audio API Engine (Dibuat & Diputar Langsung oleh Browser) ---
+    let audioCtx = null;
     let isPlaying = false;
+    let noteTimeout = null;
 
-    // Direct CDN Stream MP3 (Bazzi - Beautiful)
-    audio.src = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3"; 
+    // Frekuensi Nada (Piano Tone)
+    const notes = {
+      'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88,
+      'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00
+    };
 
-    function playMusic() {
-      audio.play().then(() => {
-        isPlaying = true;
-        musicText.innerText = "Beautiful - Bazzi 🎶";
-        musicIcon.innerText = "🔊";
-      }).catch(err => {
-        console.log("Autoplay ditahan browser, klik lagi untuk memutar:", err);
-      });
+    // Melodi Lagu Happy Birthday
+    const songMelody = [
+      { note: 'G4', duration: 0.3 }, { note: 'G4', duration: 0.3 },
+      { note: 'A4', duration: 0.6 }, { note: 'G4', duration: 0.6 },
+      { note: 'C5', duration: 0.6 }, { note: 'B4', duration: 1.0 },
+      
+      { note: 'G4', duration: 0.3 }, { note: 'G4', duration: 0.3 },
+      { note: 'A4', duration: 0.6 }, { note: 'G4', duration: 0.6 },
+      { note: 'D5', duration: 0.6 }, { note: 'C5', duration: 1.0 },
+      
+      { note: 'G4', duration: 0.3 }, { note: 'G4', duration: 0.3 },
+      { note: 'G5', duration: 0.6 }, { note: 'E5', duration: 0.6 },
+      { note: 'C5', duration: 0.6 }, { note: 'B4', duration: 0.6 }, { note: 'A4', duration: 0.8 },
+      
+      { note: 'F5', duration: 0.3 }, { note: 'F5', duration: 0.3 },
+      { note: 'E5', duration: 0.6 }, { note: 'C5', duration: 0.6 },
+      { note: 'D5', duration: 0.6 }, { note: 'C5', duration: 1.2 }
+    ];
+
+    function playNote(freq, duration) {
+      if (!audioCtx) return;
+      
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.type = 'sine'; // Nada halus mirip piano lembut
+      osc.frequency.value = freq;
+      
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    let currentNoteIndex = 0;
+
+    function playNextNote() {
+      if (!isPlaying) return;
+
+      const current = songMelody[currentNoteIndex];
+      playNote(notes[current.note], current.duration);
+
+      currentNoteIndex = (currentNoteIndex + 1) % songMelody.length;
+      noteTimeout = setTimeout(playNextNote, current.duration * 600);
+    }
+
+    function startNativeBrowserAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      isPlaying = true;
+      document.getElementById('musicText').innerText = "Playing Melody 🎶";
+      document.getElementById('musicIcon').innerText = "🔊";
+      playNextNote();
+    }
+
+    function stopNativeBrowserAudio() {
+      isPlaying = false;
+      clearTimeout(noteTimeout);
+      document.getElementById('musicText').innerText = "Putar Melodi";
+      document.getElementById('musicIcon').innerText = "🎵";
     }
 
     function toggleMusic() {
       if (isPlaying) {
-        audio.pause();
-        isPlaying = false;
-        musicText.innerText = "Putar Musik";
-        musicIcon.innerText = "🎵";
+        stopNativeBrowserAudio();
       } else {
-        playMusic();
+        startNativeBrowserAudio();
       }
     }
 
-    // Handler opsional jika ingin memilih file MP3 dari perangkat
-    document.getElementById('fileAudioInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const url = URL.createObjectURL(file);
-        audio.src = url;
-        playMusic();
-      }
-    });
-
-    // Data Pujian Manis
+    // Data Pujian Manis & Hangat
     const compliments = [
       {
         icon: "✨",
@@ -558,7 +599,7 @@
 
     // Modal Logic
     function showCompliment(index) {
-      playMusic();
+      if (!isPlaying) startNativeBrowserAudio();
       const data = compliments[index];
       document.getElementById('modalIcon').innerText = data.icon;
       document.getElementById('modalTitle').innerText = data.title;
@@ -567,7 +608,7 @@
     }
 
     function openSurprise() {
-      playMusic();
+      if (!isPlaying) startNativeBrowserAudio();
 
       // Trigger Confetti Multi-Burst
       var count = 200;
