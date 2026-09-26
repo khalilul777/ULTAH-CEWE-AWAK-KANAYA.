@@ -70,7 +70,7 @@
       position: fixed;
       top: 15px;
       right: 15px;
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(8px);
       border-radius: 30px;
       padding: 8px 14px;
@@ -362,10 +362,8 @@
 </head>
 <body>
 
-  <!-- Element Audio: Bazzi - Beautiful -->
-  <audio id="bgMusic" loop>
-    <source src="https://files.catbox.moe/54s6t9.mp3" type="audio/mpeg">
-  </audio>
+  <!-- Hidden YouTube Audio Player (Bazzi - Beautiful) -->
+  <iframe id="youtubeAudio" width="0" height="0" src="" frameborder="0" allow="autoplay"></iframe>
 
   <!-- Tombol Play/Pause Musik Melayang -->
   <div class="music-badge" id="musicBtn" onclick="toggleMusic()">
@@ -385,7 +383,7 @@
 
     <span class="badge">SWEET 16 • 10 OKTOBER</span>
     <h1>Happy Birthday, Kanaya! ❤️</h1>
-    <p class="subtitle">Klik fotonya buat lihat pesan tersembunyi ya 😜</p>
+    <p class="subtitle">Klik fotonya atau tombol di bawah buat denger lagu & bacanya 💖</p>
 
     <!-- Photo Carousel / Slider -->
     <div class="slider-title">✨ Favorite Moments ✨</div>
@@ -461,25 +459,27 @@
   </div>
 
   <script>
-    // Audio Player Logic
-    const audio = document.getElementById('bgMusic');
+    // System Player YouTube Audio
+    const ytIframe = document.getElementById('youtubeAudio');
     const musicText = document.getElementById('musicText');
     const musicIcon = document.getElementById('musicIcon');
     let isPlaying = false;
 
+    // ID Video YouTube "Bazzi - Beautiful"
+    const ytVideoId = "3vB85R2-oA0"; 
+
     function playMusic() {
-      audio.play().then(() => {
+      if (!isPlaying) {
+        ytIframe.src = `https://www.youtube.com/embed/${ytVideoId}?autoplay=1&loop=1&playlist=${ytVideoId}`;
         isPlaying = true;
         musicText.innerText = "Beautiful 🎶";
         musicIcon.innerText = "🔊";
-      }).catch(err => {
-        console.log("Autoplay blocked by browser:", err);
-      });
+      }
     }
 
     function toggleMusic() {
       if (isPlaying) {
-        audio.pause();
+        ytIframe.src = "";
         isPlaying = false;
         musicText.innerText = "Play Music";
         musicIcon.innerText = "🎵";
