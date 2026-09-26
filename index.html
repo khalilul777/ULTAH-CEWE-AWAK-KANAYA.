@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Happy Birthday, Kanaya!</title>
+  
+  <!-- Canvas Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  
+  <!-- Google Fonts Premium -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-pink: #ff4d6d;
+      --soft-pink: #ff8fa3;
+      --light-pink: #fff0f3;
+      --pure-white: #ffffff;
+      --text-dark: #3a2228;
+      --text-muted: #8c6870;
+      --shadow-pink: rgba(255, 77, 109, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(180deg, #fff0f3 0%, #ffccd5 100%);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text-dark);
+      padding: 30px 15px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Floating Hearts Ambient */
+    .floating-hearts {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .heart-item {
+      position: absolute;
+      bottom: -20px;
+      opacity: 0;
+      animation: floatUp ease-in-out infinite;
+    }
+
+    @keyframes floatUp {
+      0% { bottom: -20px; opacity: 0; transform: translateX(0) rotate(0deg); }
+      20% { opacity: 0.8; }
+      80% { opacity: 0.8; }
+      100% { bottom: 110vh; opacity: 0; transform: translateX(20px) rotate(180deg); }
+    }
+
+    /* Main Card */
+    .card {
+      background: var(--pure-white);
+      border-radius: 32px;
+      padding: 35px 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 40px var(--shadow-pink);
+      border: 2px solid #ffffff;
+      text-align: center;
+      z-index: 2;
+      animation: cardFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes cardFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    /* Profile Avatar */
+    .photo-frame {
+      width: 130px;
+      height: 130px;
+      margin: 0 auto 16px auto;
+      border-radius: 50%;
+      padding: 4px;
+      background: linear-gradient(135deg, var(--primary-pink), var(--soft-pink), #ffffff);
+      box-shadow: 0 8px 24px var(--shadow-pink);
+      animation: pulseGlow 2s infinite;
+    }
+
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.5); }
+      70% { box-shadow: 0 0 0 14px rgba(255, 77, 109, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(255, 77, 109, 0); }
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--light-pink);
+      color: var(--primary-pink);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 10px;
+      letter-spacing: 1px;
+    }
+
+    h1 {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2.8rem;
+      color: var(--primary-pink);
+      margin-bottom: 6px;
+      font-weight: 400;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    /* Slider Container */
+    .slider-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary-pink);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .slider-wrapper {
+      position: relative;
+      width: 100%;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      margin-bottom: 12px;
+    }
+
+    .slider-track {
+      display: flex;
+      transition: transform 0.4s ease-in-out;
+      width: 100%;
+    }
+
+    .slide {
+      min-width: 100%;
+      height: 220px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .slide-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 12px;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    /* Slider Buttons */
+    .slider-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.85);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      color: var(--primary-pink);
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      transition: all 0.2s;
+    }
+
+    .slider-btn:hover {
+      background: #ffffff;
+      transform: translateY(-50%) scale(1.1);
+    }
+
+    .slider-btn.prev { left: 8px; }
+    .slider-btn.next { right: 8px; }
+
+    /* Slider Dots */
+    .dots-container {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ffd0d8;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .dot.active {
+      width: 22px;
+      border-radius: 10px;
+      background: var(--primary-pink);
+    }
+
+    /* Surprise Button */
+    .btn-surprise {
+      background: linear-gradient(135deg, #ff4d6d, #ff758f);
+      border: none;
+      padding: 14px 28px;
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px var(--shadow-pink);
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .btn-surprise:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(255, 77, 109, 0.45);
+    }
+
+    /* Modal / Pop-up Styling */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(58, 34, 40, 0.6);
+      backdrop-filter: blur(5px);
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      border-radius: 28px;
+      padding: 30px 22px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      transform: scale(0.8);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-backdrop.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-icon {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--primary-pink);
+      margin-bottom: 12px;
+    }
+
+    .modal-text {
+      font-size: 0.9rem;
+      line-height: 1.7;
+      color: var(--text-dark);
+      margin-bottom: 20px;
+    }
+
+    .btn-close {
+      background: var(--light-pink);
+      color: var(--primary-pink);
+      border: none;
+      padding: 10px 24px;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-close:hover {
+      background: #ffe0e6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Floating Hearts Background -->
+  <div class="floating-hearts" id="heartsContainer"></div>
+
+  <!-- Main Card -->
+  <div class="card">
+    
+    <!-- Foto Utama Profile -->
+    <div class="photo-frame">
+      <img src="https://lh3.googleusercontent.com/d/1ZJPZF17h1Kl5DCuyYOGilWtg2xT1ABIb" alt="Kanaya">
+    </div>
+
+    <span class="badge">SWEET 16 • 10 OKTOBER</span>
+    <h1>Happy Birthday, Kanaya! ❤️</h1>
+    <p class="subtitle">Klik fotonya buat lihat pesan tersembunyi ya 😜</p>
+
+    <!-- Photo Carousel / Slider -->
+    <div class="slider-title">✨ Favorite Moments ✨</div>
+    <div class="slider-wrapper">
+      <button class="slider-btn prev" onclick="moveSlide(-1)">❮</button>
+      <button class="slider-btn next" onclick="moveSlide(1)">❯</button>
+
+      <div class="slider-track" id="sliderTrack">
+        
+        <!-- Slide 1 -->
+        <div class="slide" onclick="showCompliment(0)">
+          <img src="https://lh3.googleusercontent.com/d/1CwnnXNosAak4EXCxc9bWDEruCLvqwsuS" alt="Foto 1">
+          <div class="slide-overlay">Klik fotonya ya! 💖</div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="slide" onclick="showCompliment(1)">
+          <img src="https://lh3.googleusercontent.com/d/1i5oD2iytPkBy7vIUzTCLSgmBPMjeZReP" alt="Foto 2">
+          <div class="slide-overlay">Favorit aku banget ✨</div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="slide" onclick="showCompliment(2)">
+          <img src="https://lh3.googleusercontent.com/d/1xip4w_teWn7L5v9wsDVIYqOmEZfl27y5" alt="Foto 3">
+          <div class="slide-overlay">Cantik banget 🌸</div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="slide" onclick="showCompliment(3)">
+          <img src="https://lh3.googleusercontent.com/d/1EuovnxCCLqg1ANaiHSY3lZBd3eHDB779" alt="Foto 4">
+          <div class="slide-overlay">Manis banget 🥰</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Dots Navigation -->
+    <div class="dots-container">
+      <div class="dot active" onclick="goToSlide(0)"></div>
+      <div class="dot" onclick="goToSlide(1)"></div>
+      <div class="dot" onclick="goToSlide(2)"></div>
+      <div class="dot" onclick="goToSlide(3)"></div>
+    </div>
+
+    <!-- Surprise Button -->
+    <button class="btn-surprise" onclick="openSurprise()">Buka Surat Dari Aku 🎉</button>
+
+  </div>
+
+  <!-- Pop-up Modal untuk Pujian Foto -->
+  <div class="modal-backdrop" id="complimentModal">
+    <div class="modal-card">
+      <div class="modal-icon" id="modalIcon">🌸</div>
+      <div class="modal-title" id="modalTitle">Pujian Spesial</div>
+      <p class="modal-text" id="modalText">Teks pujian bakal muncul di sini...</p>
+      <button class="btn-close" onclick="closeModal('complimentModal')">Bisa Aja Nih 🙈</button>
+    </div>
+  </div>
+
+  <!-- Pop-up Modal untuk Ucapan Ultah Utama -->
+  <div class="modal-backdrop" id="surpriseModal">
+    <div class="modal-card">
+      <div class="modal-icon">🎉🎂❤️</div>
+      <div class="modal-title">Happy Sweet 16, Kanaya! 💖</div>
+      <p class="modal-text">
+        Selamat ulang tahun ya buat kamu! ✨<br><br>
+        Jujur ya, kadang aku suka mikir kok bisa ada cewek selucu dan sekeren kamu. Kadang suka random, kadang bikin gemes, tapi tetep aja selalu bikin aku kangen tiap hari.<br><br>
+        Di umur kamu yang ke-16 ini, pokoknya kamu harus makin bahagia, sehat selalu, lancar segala urusannya, dan tetep jadi orang yang selalu bikin hari-hari aku penuh warna.<br><br>
+        Makasih ya udah hadir di hidup aku. I’m so lucky to have you! ❤️
+      </p>
+      <button class="btn-close" onclick="closeModal('surpriseModal')">Makasih Banyak! 🥰</button>
+    </div>
+  </div>
+
+  <script>
+    // Data Pujian Manis & Hangat
+    const compliments = [
+      {
+        icon: "✨",
+        title: "Memang Beda",
+        text: "Jujur foto ini tuh gak santai cantiknya. Kamu cuma diem aja di sini tapi aura manisnya udah ke mana-mana. Bikin aku makin gak bisa berpaling."
+      },
+      {
+        icon: "💖",
+        title: "Paling Cantik",
+        text: "Lihat senyum kamu di foto ini tuh moodbooster paling ampuh. Se-capek apapun hari yang aku laluin, pas lihat wajah kamu rasanya langsung tenang lagi."
+      },
+      {
+        icon: "🌸",
+        title: "Manis Banget Sih",
+        text: "Fix ini jadi salah satu foto favorit aku. Bunga-bunga aja kalah saing sama kamu. Kok bisa ya kamu punya senyum sehebat ini?"
+      },
+      {
+        icon: "🥰",
+        title: "Favorit Sepanjang Masa",
+        text: "Gak pernah bosan tiap kali lihat foto yang satu ini. Pokoknya kamu tuh orang yang paling spesial buat aku. Tetep jadi diri kamu sendiri ya!"
+      }
+    ];
+
+    // Carousel Slider Logic
+    let currentSlide = 0;
+    const totalSlides = 4;
+    const track = document.getElementById('sliderTrack');
+    const dots = document.querySelectorAll('.dot');
+
+    function updateSlider() {
+      track.style.transform = `translateX(-${currentSlide * 100}%)`;
+      dots.forEach((dot, index) => {
+        if (index === currentSlide) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+    }
+
+    function moveSlide(direction) {
+      currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+      updateSlider();
+    }
+
+    function goToSlide(index) {
+      currentSlide = index;
+      updateSlider();
+    }
+
+    // Modal Logic
+    function showCompliment(index) {
+      const data = compliments[index];
+      document.getElementById('modalIcon').innerText = data.icon;
+      document.getElementById('modalTitle').innerText = data.title;
+      document.getElementById('modalText').innerText = data.text;
+      document.getElementById('complimentModal').classList.add('active');
+    }
+
+    function openSurprise() {
+      // Trigger Confetti Multi-Burst
+      var count = 200;
+      var defaults = { origin: { y: 0.7 } };
+
+      function fire(particleRatio, opts) {
+        confetti(Object.assign({}, defaults, opts, {
+          particleCount: Math.floor(count * particleRatio)
+        }));
+      }
+
+      fire(0.25, { spread: 26, startVelocity: 55 });
+      fire(0.2, { spread: 60 });
+      fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
+      fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+      fire(0.1, { spread: 120, startVelocity: 45 });
+
+      // Open Surprise Modal
+      setTimeout(() => {
+        document.getElementById('surpriseModal').classList.add('active');
+      }, 300);
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+
+    // Generator Floating Hearts Background
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.classList.add('heart-item');
+      
+      const icons = ['🌸', '💖', '✨', '💕', '💗'];
+      heart.innerText = icons[Math.floor(Math.random() * icons.length)];
+      
+      heart.style.left = Math.random() * 100 + "vw";
+      const duration = Math.random() * 3 + 3;
+      heart.style.animationDuration = duration + "s";
+      heart.style.fontSize = Math.random() * 15 + 12 + "px";
+      
+      document.getElementById('heartsContainer').appendChild(heart);
+      
+      setTimeout(() => {
+        heart.remove();
+      }, duration * 1000);
+    }
+
+    setInterval(createHeart, 350);
+  </script>
+
+</body>
+</html>
