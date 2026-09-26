@@ -253,7 +253,7 @@
       display: flex;
       justify-content: center;
       gap: 6px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .dot {
@@ -271,7 +271,7 @@
       background: var(--primary-pink);
     }
 
-    /* Surprise Button */
+    /* Buttons Group */
     .btn-surprise {
       background: linear-gradient(135deg, #ff4d6d, #ff758f);
       border: none;
@@ -284,11 +284,35 @@
       box-shadow: 0 8px 20px var(--shadow-pink);
       transition: all 0.3s ease;
       width: 100%;
+      margin-bottom: 12px;
     }
 
     .btn-surprise:hover {
       transform: translateY(-3px);
       box-shadow: 0 12px 25px rgba(255, 77, 109, 0.5);
+    }
+
+    /* Button Upload Audio */
+    .btn-upload {
+      background: #ffffff;
+      border: 2px dashed var(--soft-pink);
+      padding: 10px 20px;
+      color: var(--primary-pink);
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-upload:hover {
+      background: var(--light-pink);
+      border-color: var(--primary-pink);
     }
 
     /* Modal / Pop-up Styling */
@@ -366,15 +390,15 @@
 </head>
 <body>
 
-  <!-- Hidden Native HTML5 Audio Tag -->
+  <!-- Native HTML5 Audio Tag -->
   <audio id="myAudio" loop></audio>
 
-  <!-- Input tersembunyi jika ingin memilih lagu dari HP -->
+  <!-- Hidden File Input untuk Upload Audio -->
   <input type="file" id="audioFileInput" accept="audio/*">
 
   <!-- Tombol Musik Melayang -->
   <div class="music-badge" id="musicBtn" onclick="toggleMusic()">
-    <span id="musicIcon">🎵</span> <span id="musicText">Beautiful - Bazzi</span>
+    <span id="musicIcon">🎵</span> <span id="musicText">Putar Lagu 🎶</span>
   </div>
 
   <!-- Floating Hearts Background -->
@@ -435,8 +459,13 @@
       <div class="dot" onclick="goToSlide(3)"></div>
     </div>
 
-    <!-- Surprise Button -->
+    <!-- Action Buttons -->
     <button class="btn-surprise" onclick="openSurprise()">Buka Surat Dari Aku 🎉</button>
+    
+    <!-- Tombol Khusus Upload Audio -->
+    <button class="btn-upload" onclick="triggerAudioUpload()">
+      <span>📁</span> Upload Audio Lagu MP3
+    </button>
 
   </div>
 
@@ -469,10 +498,31 @@
     const audio = document.getElementById('myAudio');
     const musicText = document.getElementById('musicText');
     const musicIcon = document.getElementById('musicIcon');
+    const audioFileInput = document.getElementById('audioFileInput');
     let isPlaying = false;
 
-    // Direct Audio Stream Link
+    // Default Online Stream Link
     audio.src = "https://files.catbox.moe/97w53z.mp3"; 
+
+    function triggerAudioUpload() {
+      audioFileInput.click();
+    }
+
+    // Listener saat file audio dipilih
+    audioFileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        audio.src = URL.createObjectURL(file);
+        audio.play();
+        isPlaying = true;
+        // Ambil nama file dan potong jika terlalu panjang
+        let fileName = file.name.replace(/\.[^/.]+$/, "");
+        if (fileName.length > 15) fileName = fileName.substring(0, 15) + '...';
+        
+        musicText.innerText = fileName + " 🎶";
+        musicIcon.innerText = "🔊";
+      }
+    });
 
     function playMusic() {
       audio.play().then(() => {
@@ -480,8 +530,8 @@
         musicText.innerText = "Beautiful 🎶";
         musicIcon.innerText = "🔊";
       }).catch(err => {
-        // Jika link eksternal ditahan browser, buka pemilih file
-        document.getElementById('audioFileInput').click();
+        // Jika pemutaran otomatis diblokir browser, panggil pemilih file
+        triggerAudioUpload();
       });
     }
 
@@ -492,21 +542,13 @@
         musicText.innerText = "Play Music";
         musicIcon.innerText = "🎵";
       } else {
-        playMusic();
+        if (!audio.src) {
+          triggerAudioUpload();
+        } else {
+          playMusic();
+        }
       }
     }
-
-    // Listener jika pengguna memilih file mp3 sendiri dari perangkat
-    document.getElementById('audioFileInput').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        audio.src = URL.createObjectURL(file);
-        audio.play();
-        isPlaying = true;
-        musicText.innerText = "Beautiful 🎶";
-        musicIcon.innerText = "🔊";
-      }
-    });
 
     // Data Pujian
     const compliments = [
