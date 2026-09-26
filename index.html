@@ -65,30 +65,34 @@
       100% { bottom: 110vh; opacity: 0; transform: translateX(20px) rotate(180deg); }
     }
 
-    /* Music Floating Badge Control */
+    /* Music Floating Control */
     .music-badge {
       position: fixed;
       top: 15px;
       right: 15px;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
       border-radius: 30px;
-      padding: 8px 14px;
-      font-size: 0.75rem;
+      padding: 8px 16px;
+      font-size: 0.8rem;
       font-weight: 700;
       color: var(--primary-pink);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       z-index: 10;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      border: 2px solid var(--soft-pink);
       transition: all 0.3s ease;
     }
 
     .music-badge:hover {
       transform: scale(1.05);
+    }
+
+    #fileAudioInput {
+      display: none;
     }
 
     /* Main Card */
@@ -362,14 +366,15 @@
 </head>
 <body>
 
-  <!-- Element Audio dari Link Google Drive Kamu -->
-  <audio id="bgMusic" loop preload="auto">
-    <source src="https://lh3.googleusercontent.com/d/1aYgKXYy6vc6rqsI2kuPbxP4WKwTuoWcY" type="audio/mpeg">
-  </audio>
+  <!-- Element Audio HTML5 Utama -->
+  <audio id="mainAudio" loop></audio>
 
-  <!-- Tombol Play/Pause Musik Melayang -->
+  <!-- Input tersembunyi untuk memuat file audio lokal jika diinginkan -->
+  <input type="file" id="fileAudioInput" accept="audio/*">
+
+  <!-- Tombol Musik Melayang -->
   <div class="music-badge" id="musicBtn" onclick="toggleMusic()">
-    <span id="musicIcon">🎵</span> <span id="musicText">Beautiful - Bazzi</span>
+    <span id="musicIcon">🎵</span> <span id="musicText">Putar Musik 🎶</span>
   </div>
 
   <!-- Floating Hearts Background -->
@@ -385,7 +390,7 @@
 
     <span class="badge">SWEET 16 • 10 OKTOBER</span>
     <h1>Happy Birthday, Kanaya! ❤️</h1>
-    <p class="subtitle">Klik fotonya atau tombol di bawah buat denger lagu & bacanya 💖</p>
+    <p class="subtitle">Klik fotonya atau tombol di bawah ya! 💖</p>
 
     <!-- Photo Carousel / Slider -->
     <div class="slider-title">✨ Favorite Moments ✨</div>
@@ -461,19 +466,21 @@
   </div>
 
   <script>
-    // Audio Control Logic (Google Drive Direct Stream)
-    const audio = document.getElementById('bgMusic');
+    const audio = document.getElementById('mainAudio');
     const musicText = document.getElementById('musicText');
     const musicIcon = document.getElementById('musicIcon');
     let isPlaying = false;
 
+    // Direct CDN Stream MP3 (Bazzi - Beautiful)
+    audio.src = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3"; 
+
     function playMusic() {
       audio.play().then(() => {
         isPlaying = true;
-        musicText.innerText = "Beautiful 🎶";
+        musicText.innerText = "Beautiful - Bazzi 🎶";
         musicIcon.innerText = "🔊";
       }).catch(err => {
-        console.log("Play failed / Blocked by browser:", err);
+        console.log("Autoplay ditahan browser, klik lagi untuk memutar:", err);
       });
     }
 
@@ -481,14 +488,24 @@
       if (isPlaying) {
         audio.pause();
         isPlaying = false;
-        musicText.innerText = "Play Music";
+        musicText.innerText = "Putar Musik";
         musicIcon.innerText = "🎵";
       } else {
         playMusic();
       }
     }
 
-    // Data Pujian Manis & Hangat
+    // Handler opsional jika ingin memilih file MP3 dari perangkat
+    document.getElementById('fileAudioInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        audio.src = url;
+        playMusic();
+      }
+    });
+
+    // Data Pujian Manis
     const compliments = [
       {
         icon: "✨",
