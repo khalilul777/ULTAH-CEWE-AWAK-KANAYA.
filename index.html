@@ -65,30 +65,35 @@
       100% { bottom: 110vh; opacity: 0; transform: translateX(20px) rotate(180deg); }
     }
 
-    /* Music Floating Badge Control */
+    /* Music Floating Controls */
     .music-badge {
       position: fixed;
       top: 15px;
       right: 15px;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(8px);
       border-radius: 30px;
-      padding: 8px 14px;
-      font-size: 0.75rem;
+      padding: 8px 16px;
+      font-size: 0.8rem;
       font-weight: 700;
       color: var(--primary-pink);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
       z-index: 10;
       cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      border: 2px solid var(--soft-pink);
       transition: all 0.3s ease;
     }
 
     .music-badge:hover {
       transform: scale(1.05);
+    }
+
+    /* Input File Lagu Rahasia */
+    #audioFileInput {
+      display: none;
     }
 
     /* Main Card */
@@ -287,6 +292,18 @@
       box-shadow: 0 12px 25px rgba(255, 77, 109, 0.5);
     }
 
+    /* Custom Audio Link Section */
+    .custom-song-btn {
+      margin-top: 15px;
+      background: transparent;
+      border: 1px dashed var(--primary-pink);
+      color: var(--primary-pink);
+      font-size: 0.75rem;
+      padding: 6px 12px;
+      border-radius: 15px;
+      cursor: pointer;
+    }
+
     /* Modal / Pop-up Styling */
     .modal-backdrop {
       position: fixed;
@@ -362,12 +379,13 @@
 </head>
 <body>
 
-  <!-- Hidden YouTube Audio Player (Bazzi - Beautiful) -->
-  <iframe id="youtubeAudio" width="0" height="0" src="" frameborder="0" allow="autoplay"></iframe>
+  <!-- Hidden File Input jika ingin pakai lagu MP3 sendiri dari HP/Laptop -->
+  <input type="file" id="audioFileInput" accept="audio/*">
+  <audio id="localAudio" loop></audio>
 
-  <!-- Tombol Play/Pause Musik Melayang -->
+  <!-- Tombol Musik Melayang -->
   <div class="music-badge" id="musicBtn" onclick="toggleMusic()">
-    <span id="musicIcon">🎵</span> <span id="musicText">Beautiful - Bazzi</span>
+    <span id="musicIcon">🔊</span> <span id="musicText">Putar Musik 🎵</span>
   </div>
 
   <!-- Floating Hearts Background -->
@@ -383,7 +401,7 @@
 
     <span class="badge">SWEET 16 • 10 OKTOBER</span>
     <h1>Happy Birthday, Kanaya! ❤️</h1>
-    <p class="subtitle">Klik fotonya atau tombol di bawah buat denger lagu & bacanya 💖</p>
+    <p class="subtitle">Klik fotonya atau tombol di bawah ya! 💖</p>
 
     <!-- Photo Carousel / Slider -->
     <div class="slider-title">✨ Favorite Moments ✨</div>
@@ -431,6 +449,11 @@
     <!-- Surprise Button -->
     <button class="btn-surprise" onclick="openSurprise()">Buka Surat Dari Aku 🎉</button>
 
+    <!-- Opsi Pilihan Upload MP3 Asli (Optional) -->
+    <button class="custom-song-btn" onclick="document.getElementById('audioFileInput').click()">
+      📁 Pilih MP3 "Beautiful - Bazzi" Dari HP
+    </button>
+
   </div>
 
   <!-- Pop-up Modal untuk Pujian Foto -->
@@ -459,36 +482,99 @@
   </div>
 
   <script>
-    // System Player YouTube Audio
-    const ytIframe = document.getElementById('youtubeAudio');
-    const musicText = document.getElementById('musicText');
-    const musicIcon = document.getElementById('musicIcon');
-    let isPlaying = false;
+    // System Web Audio Synthesizer (Pasti Bunyi di HP/Laptop Tanpa Server Eksternal)
+    let audioCtx = null;
+    let isSynthPlaying = false;
+    let synthInterval = null;
+    let isCustomMp3Loaded = false;
+    const localAudio = document.getElementById('localAudio');
 
-    // ID Video YouTube "Bazzi - Beautiful"
-    const ytVideoId = "3vB85R2-oA0"; 
+    // Melodi Nada Romantis (Beautiful Vibes)
+    const melody = [
+      261.63, 329.63, 392.00, 523.25, 392.00, 329.63,
+      293.66, 349.23, 440.00, 587.33, 440.00, 349.23,
+      329.63, 392.00, 493.88, 659.25, 493.88, 392.00,
+      349.23, 440.00, 523.25, 698.46, 523.25, 440.00
+    ];
+    let noteIdx = 0;
+
+    function playSynthTone() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(melody[noteIdx], audioCtx.currentTime);
+
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.8);
+
+      noteIdx = (noteIdx + 1) % melody.length;
+    }
 
     function playMusic() {
-      if (!isPlaying) {
-        ytIframe.src = `https://www.youtube.com/embed/${ytVideoId}?autoplay=1&loop=1&playlist=${ytVideoId}`;
-        isPlaying = true;
-        musicText.innerText = "Beautiful 🎶";
-        musicIcon.innerText = "🔊";
+      if (isCustomMp3Loaded) {
+        localAudio.play();
+        document.getElementById('musicText').innerText = "Beautiful 🎶";
+      } else {
+        if (!isSynthPlaying) {
+          isSynthPlaying = true;
+          playSynthTone();
+          synthInterval = setInterval(playSynthTone, 400);
+          document.getElementById('musicText').innerText = "Musik On 🎶";
+        }
       }
     }
 
     function toggleMusic() {
-      if (isPlaying) {
-        ytIframe.src = "";
-        isPlaying = false;
-        musicText.innerText = "Play Music";
-        musicIcon.innerText = "🎵";
+      if (isCustomMp3Loaded) {
+        if (localAudio.paused) {
+          localAudio.play();
+          document.getElementById('musicText').innerText = "Beautiful 🎶";
+        } else {
+          localAudio.pause();
+          document.getElementById('musicText').innerText = "Musik Off";
+        }
       } else {
-        playMusic();
+        if (isSynthPlaying) {
+          clearInterval(synthInterval);
+          isSynthPlaying = false;
+          document.getElementById('musicText').innerText = "Musik Off";
+        } else {
+          playMusic();
+        }
       }
     }
 
-    // Data Pujian Manis & Hangat
+    // HandIe Upload File MP3 Bazzi
+    document.getElementById('audioFileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        if (isSynthPlaying) {
+          clearInterval(synthInterval);
+          isSynthPlaying = false;
+        }
+        const fileURL = URL.createObjectURL(file);
+        localAudio.src = fileURL;
+        isCustomMp3Loaded = true;
+        localAudio.play();
+        document.getElementById('musicText').innerText = "Beautiful - Bazzi 🎶";
+      }
+    });
+
+    // Data Pujian Manis
     const compliments = [
       {
         icon: "✨",
