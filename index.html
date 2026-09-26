@@ -65,7 +65,7 @@
       100% { bottom: 110vh; opacity: 0; transform: translateX(20px) rotate(180deg); }
     }
 
-    /* Music Floating Badge Control */
+    /* Music Badge Control */
     .music-badge {
       position: fixed;
       top: 15px;
@@ -89,6 +89,10 @@
 
     .music-badge:hover {
       transform: scale(1.05);
+    }
+
+    #audioFileInput {
+      display: none;
     }
 
     /* Main Card */
@@ -362,9 +366,15 @@
 </head>
 <body>
 
+  <!-- Hidden Native HTML5 Audio Tag -->
+  <audio id="myAudio" loop></audio>
+
+  <!-- Input tersembunyi jika ingin memilih lagu dari HP -->
+  <input type="file" id="audioFileInput" accept="audio/*">
+
   <!-- Tombol Musik Melayang -->
   <div class="music-badge" id="musicBtn" onclick="toggleMusic()">
-    <span id="musicIcon">🎵</span> <span id="musicText">Putar Melodi 🎶</span>
+    <span id="musicIcon">🎵</span> <span id="musicText">Beautiful - Bazzi</span>
   </div>
 
   <!-- Floating Hearts Background -->
@@ -456,97 +466,49 @@
   </div>
 
   <script>
-    // --- Web Audio API Engine (Dibuat & Diputar Langsung oleh Browser) ---
-    let audioCtx = null;
+    const audio = document.getElementById('myAudio');
+    const musicText = document.getElementById('musicText');
+    const musicIcon = document.getElementById('musicIcon');
     let isPlaying = false;
-    let noteTimeout = null;
 
-    // Frekuensi Nada (Piano Tone)
-    const notes = {
-      'C4': 261.63, 'D4': 293.66, 'E4': 329.63, 'F4': 349.23, 'G4': 392.00, 'A4': 440.00, 'B4': 493.88,
-      'C5': 523.25, 'D5': 587.33, 'E5': 659.25, 'F5': 698.46, 'G5': 783.99, 'A5': 880.00
-    };
+    // Direct Audio Stream Link
+    audio.src = "https://files.catbox.moe/97w53z.mp3"; 
 
-    // Melodi Lagu Happy Birthday
-    const songMelody = [
-      { note: 'G4', duration: 0.3 }, { note: 'G4', duration: 0.3 },
-      { note: 'A4', duration: 0.6 }, { note: 'G4', duration: 0.6 },
-      { note: 'C5', duration: 0.6 }, { note: 'B4', duration: 1.0 },
-      
-      { note: 'G4', duration: 0.3 }, { note: 'G4', duration: 0.3 },
-      { note: 'A4', duration: 0.6 }, { note: 'G4', duration: 0.6 },
-      { note: 'D5', duration: 0.6 }, { note: 'C5', duration: 1.0 },
-      
-      { note: 'G4', duration: 0.3 }, { note: 'G4', duration: 0.3 },
-      { note: 'G5', duration: 0.6 }, { note: 'E5', duration: 0.6 },
-      { note: 'C5', duration: 0.6 }, { note: 'B4', duration: 0.6 }, { note: 'A4', duration: 0.8 },
-      
-      { note: 'F5', duration: 0.3 }, { note: 'F5', duration: 0.3 },
-      { note: 'E5', duration: 0.6 }, { note: 'C5', duration: 0.6 },
-      { note: 'D5', duration: 0.6 }, { note: 'C5', duration: 1.2 }
-    ];
-
-    function playNote(freq, duration) {
-      if (!audioCtx) return;
-      
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      
-      osc.type = 'sine'; // Nada halus mirip piano lembut
-      osc.frequency.value = freq;
-      
-      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
-      
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      
-      osc.start();
-      osc.stop(audioCtx.currentTime + duration);
-    }
-
-    let currentNoteIndex = 0;
-
-    function playNextNote() {
-      if (!isPlaying) return;
-
-      const current = songMelody[currentNoteIndex];
-      playNote(notes[current.note], current.duration);
-
-      currentNoteIndex = (currentNoteIndex + 1) % songMelody.length;
-      noteTimeout = setTimeout(playNextNote, current.duration * 600);
-    }
-
-    function startNativeBrowserAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-
-      isPlaying = true;
-      document.getElementById('musicText').innerText = "Playing Melody 🎶";
-      document.getElementById('musicIcon').innerText = "🔊";
-      playNextNote();
-    }
-
-    function stopNativeBrowserAudio() {
-      isPlaying = false;
-      clearTimeout(noteTimeout);
-      document.getElementById('musicText').innerText = "Putar Melodi";
-      document.getElementById('musicIcon').innerText = "🎵";
+    function playMusic() {
+      audio.play().then(() => {
+        isPlaying = true;
+        musicText.innerText = "Beautiful 🎶";
+        musicIcon.innerText = "🔊";
+      }).catch(err => {
+        // Jika link eksternal ditahan browser, buka pemilih file
+        document.getElementById('audioFileInput').click();
+      });
     }
 
     function toggleMusic() {
       if (isPlaying) {
-        stopNativeBrowserAudio();
+        audio.pause();
+        isPlaying = false;
+        musicText.innerText = "Play Music";
+        musicIcon.innerText = "🎵";
       } else {
-        startNativeBrowserAudio();
+        playMusic();
       }
     }
 
-    // Data Pujian Manis & Hangat
+    // Listener jika pengguna memilih file mp3 sendiri dari perangkat
+    document.getElementById('audioFileInput').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        audio.src = URL.createObjectURL(file);
+        audio.play();
+        isPlaying = true;
+        musicText.innerText = "Beautiful 🎶";
+        musicIcon.innerText = "🔊";
+      }
+    });
+
+    // Data Pujian
     const compliments = [
       {
         icon: "✨",
@@ -599,7 +561,7 @@
 
     // Modal Logic
     function showCompliment(index) {
-      if (!isPlaying) startNativeBrowserAudio();
+      if (!isPlaying) playMusic();
       const data = compliments[index];
       document.getElementById('modalIcon').innerText = data.icon;
       document.getElementById('modalTitle').innerText = data.title;
@@ -608,7 +570,7 @@
     }
 
     function openSurprise() {
-      if (!isPlaying) startNativeBrowserAudio();
+      if (!isPlaying) playMusic();
 
       // Trigger Confetti Multi-Burst
       var count = 200;
@@ -636,7 +598,7 @@
       document.getElementById(id).classList.remove('active');
     }
 
-    // Generator Floating Hearts Background
+    // Floating Hearts Background
     function createHeart() {
       const heart = document.createElement('div');
       heart.classList.add('heart-item');
